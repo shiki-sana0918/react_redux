@@ -1,0 +1,1 @@
+{"version":3,"sources":["index.ts"],"names":[],"mappings":"AAAA,IAAM,OAAO,GAAW,QAAQ,CAAC,aAAa,CAAC,IAAI,CAAC,CAAC,WAAW;AAEhE,OAAO,CAAC,GAAG,CAAC,OAAO,CAAC","file":"src.77de5100.js","sourceRoot":"../src","sourcesContent":["const message: string = document.querySelector(\"h1\").textContent;\n\nconsole.log(message);\n"]}
