@@ -5,7 +5,7 @@ import produce from 'immer'
 import { Header as _Header } from './Header'
 import { Column } from './Column'
 import { DeleteDialog } from './DeleteDialog'
- import { Overlay as _Overlay } from './Overlay'
+import { Overlay as _Overlay } from './Overlay'
 
 export function App() {
   const [filterValue, setFilterValue] = useState('')

@@ -69,3 +69,38 @@ export function InputForm({
   return ref
 }
 }
+
+const Container = styled.div``
+
+const Input = styled.textarea`
+  display: block;
+  width: 100%;
+  margin-bottom: 8px;
+  border: solid 1px ${color.Silver};
+  border-radius: 3px;
+  padding: 6px 8px;
+  background-color: ${color.White};
+  font-size: 14px;
+  line-height: 1.7;
+
+  :focus {
+    outline: none;
+    border-color: ${color.Blue};
+  }
+`
+
+const ButtonRow = styled.div`
+  display: flex;
+
+  > :not(:first-child) {
+    margin-left: 8px;
+  }
+`
+
+const AddButton = styled(ConfirmButton).attrs({
+  children: 'Add',
+})``
+
+const CancelButton = styled(Button).attrs({
+  children: 'Cancel',
+})``

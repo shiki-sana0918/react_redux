@@ -13,11 +13,11 @@ export function Header({
   className?: string
 }) {
   return (
-    <Container className={className}>
-      <Logo>Kanban board</Logo>
+    <div className={className}>
+      <span>Kanban board</span>
 
       <CardFilter />
       <CardFilter value={filterValue} onChange={onFilterChange} />
-    </Container>
+    </div>
   )
 }
