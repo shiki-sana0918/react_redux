@@ -1,99 +1,92 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
+import { useSelector, shallowEqual } from 'react-redux'
 import * as color from './color'
 import { Card } from './Card'
 import { PlusIcon } from './icon'
 import { InputForm as _InputForm } from './InputForm'
+import { ColumnID } from './api'
 
+export function Column({ id: columnID }: { id: ColumnID }) {
+  const { column, cards, filtered, totalCount } = useSelector(
+    state => {
+      const filterValue = state.filterValue.trim()
+      const filtered = Boolean(filterValue)
+      const keywords = filterValue.toLowerCase().split(/\s+/g)
 
-export function Column({
-  title,
-  filterValue: rawFilterValue,
-  cards: rawCards,
-  onCardDragStart,
-  onCardDrop,
-}: {
-  title?: string
-  filterValue?: string
-  cards: {
-    id: string
-    text?: string
-  }[]
-  onCardDragStart?(id: string): void
-  onCardDrop?(entered: string | null): void
-}) {
-  const filterValue = rawFilterValue?.trim()
-  const keywords = filterValue?.toLowerCase().split(/\s+/g) ?? []
-  const cards = rawCards.filter(({ text }) =>
-    keywords?.every(w => text?.toLowerCase().includes(w)),
+      const { title, cards: rawCards } =
+        state.columns?.find(c => c.id === columnID) ?? {}
+
+      const column = { title }
+      const cards = rawCards
+        ?.filter(({ text }) =>
+          keywords.every(w => text?.toLowerCase().includes(w)),
+        )
+        .map(c => c.id)
+      const totalCount = rawCards?.length ?? -1
+
+      return { column, cards, filtered, totalCount }
+    },
+    (left, right) =>
+      Object.keys(left).every(key => shallowEqual(left[key], right[key])),
   )
-  const totalCount = rawCards.length
-
-  const [text, setText] = useState('')
+  const draggingCardID = useSelector(state => state.draggingCardID)
 
   const [inputMode, setInputMode] = useState(false)
   const toggleInput = () => setInputMode(v => !v)
-  const confirmInput = () => setText('')
   const cancelInput = () => setInputMode(false)
 
-  const [draggingCardID, setDraggingCardID] = useState<string | undefined>(
-    undefined,
-  )
-  const handleCardDragStart = (id: string) => {
-    setDraggingCardID(id)
-    onCardDragStart?.(id)
+  if (!column) {
+    return null
   }
+  const { title } = column
 
   return (
     <Container>
-      <header>
-        <CountBadge>{totalCount}</CountBadge>
+      <Header>
+        {totalCount >= 0 && <CountBadge>{totalCount}</CountBadge>}
         <ColumnName>{title}</ColumnName>
 
         <AddButton onClick={toggleInput} />
-      </header>
+      </Header>
 
-      {inputMode && (
-        <InputForm
-          value={text}
-          onChange={setText}
-          onConfirm={confirmInput}
-          onCancel={cancelInput}
-        />
-      )}
+      {inputMode && <InputForm columnID={columnID} onCancel={cancelInput} />}
 
-      {filterValue && <ResultCount>{cards.length} results</ResultCount>}
+      {!cards ? (
+        <Loading />
+      ) : (
+        <>
+          {filtered && <ResultCount>{cards.length} results</ResultCount>}
 
-      <VerticalScroll>
-        {cards.map(({ id, text }, i) => (
-          <Card.DropArea
-            key={id}
-            disabled={
-              draggingCardID !== undefined &&
-              (id === draggingCardID || cards[i - 1]?.id === draggingCardID)
-            }
-            onDrop={() => onCardDrop?.(id)}
-          >
-            <Card
-              text={text}
-              onDragStart={() => handleCardDragStart(id)}
-              onDragEnd={() => setDraggingCardID(undefined)}
+          <VerticalScroll>
+            {cards.map((id, i) => (
+              <Card.DropArea
+                key={id}
+                targetID={id}
+                disabled={
+                  draggingCardID !== undefined &&
+                  (id === draggingCardID || cards[i - 1] === draggingCardID)
+                }
+              >
+                <Card id={id} />
+              </Card.DropArea>
+            ))}
+
+            <Card.DropArea
+              targetID={columnID}
+              style={{ height: '100%' }}
+              disabled={
+                draggingCardID !== undefined &&
+                cards[cards.length - 1] === draggingCardID
+              }
             />
-          </Card.DropArea>
-        ))}
-
-        <Card.DropArea
-          style={{ height: '100%' }}
-          disabled={
-            draggingCardID !== undefined &&
-            cards[cards.length - 1]?.id === draggingCardID
-          }
-          onDrop={() => onCardDrop?.(null)}
-        />
-      </VerticalScroll>
+          </VerticalScroll>
+        </>
+      )}
     </Container>
   )
 }
+
 const Container = styled.div`
   display: flex;
   flex-flow: column;
@@ -107,6 +100,7 @@ const Container = styled.div`
     flex-shrink: 0;
   }
 `
+
 const Header = styled.div`
   display: flex;
   justify-content: flex-start;
